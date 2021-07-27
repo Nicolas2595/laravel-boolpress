@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Post;
+use App\Category;
 
 class PostController extends Controller
 {
     private $postValidationArray = [
         'title' => 'required|max:255',
-        'content' => 'required'
+        'content' => 'required',
+        'category_id' => 'nullable|exists:categories,id'
     ];
 
     private function generateSlug($data) {
@@ -51,7 +53,9 @@ class PostController extends Controller
      */
     public function create()
     {
-        return view('admin.posts.create');
+        $categories = Category::all();
+
+        return view('admin.posts.create', compact('categories'));
     }
 
     /**
@@ -63,14 +67,12 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        
         $request->validate($this->postValidationArray);
 
         $newPost = new Post();
 
         $slug = $this->generateSlug($data);
         
-
         $data['slug'] = $slug;
         $newPost->fill($data); 
 
@@ -98,7 +100,9 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        return view('admin.posts.edit', compact('post'));
+        $categories = Category::all();
+
+        return view('admin.posts.edit', compact('post', 'categories'));
     }
 
     /**
@@ -115,13 +119,12 @@ class PostController extends Controller
         $request->validate($this->postValidationArray);
 
         if($post->title != $data["title"]) {
-            
             $slug = $this->generateSlug($data);
 
             $data["slug"] = $slug;
         }
 
-        $post->update($data);
+        $post->update($data); 
 
         return redirect()->route('admin.posts.show', $post->id);
     }
