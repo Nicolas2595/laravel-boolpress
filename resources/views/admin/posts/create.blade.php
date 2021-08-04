@@ -12,7 +12,7 @@
                 </ul>
             </div>
         @endif --}}
-        <form action="{{ route('admin.posts.store') }}" method="POST">
+        <form action="{{ route('admin.posts.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('POST')
             <div class="form-group">
@@ -26,6 +26,13 @@
                 <label for="content">Testo</label>
                 <textarea class="form-control @error('content') is-invalid @enderror" id="content" rows="6" name="content" placeholder="Inserisci il testo dell'articolo">{{ old('content') }}</textarea>
                 @error('content')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+            <div class="form-group">
+                <label for="cover">Immagine di copertina</label>
+                <input type="file" name="cover" class="form-control-file @error('cover') is-invalid @enderror" id="cover">
+                @error('cover')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>

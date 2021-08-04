@@ -16,9 +16,11 @@
             </div>
         </div>
 
-      <p class="my-4">{{ post.content }}</p>
+        <img class="img-fluid" :src="post.cover" :alt="post.title">
 
-      <router-link class="btn btn-primary" :to="{ name: 'blog' }">Torna al Blog</router-link>
+        <p class="my-4">{{ post.content }}</p>
+
+        <router-link class="btn btn-primary" :to="{ name: 'blog' }">Torna al Blog</router-link>
   </section>
   
   <Loader v-else />
@@ -47,8 +49,12 @@ export default {
                 .get(`http://127.0.0.1:8000/api/posts/${slug}`)
                 .then(
                     res => {
+                         if(Object.keys(res.data).length == 0){    
+                           this.$router.push({ name: 'not-found' });     
+                        } else {
                         this.post = res.data;
                         this.loading = false;
+                        }
                     }
                 )
                 .catch(

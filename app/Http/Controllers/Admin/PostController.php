@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+
 use App\Post;
 use App\Category;
 use App\Tag;
@@ -15,7 +17,8 @@ class PostController extends Controller
         'title' => 'required|max:255',
         'content' => 'required',
         'category_id' => 'nullable|exists:categories,id',
-        'tags' => 'exists:tags,id'
+        'tags' => 'exists:tags,id',
+        'cover' => 'nullable|image|max:2048'
     ];
 
     private function generateSlug($data) {
@@ -75,6 +78,10 @@ class PostController extends Controller
         $newPost = new Post();
 
         $slug = $this->generateSlug($data);
+
+        if(array_key_exists('cover', $data)) {
+            $data["cover"] = Storage::put('post_covers', $data["cover"]);
+        }
         
         $data['slug'] = $slug;
         $newPost->fill($data); 
@@ -132,6 +139,14 @@ class PostController extends Controller
             $data["slug"] = $slug;
         }
 
+        if(array_key_exists('cover', $data)) {
+            if($post->cover) {
+                Storage::delete($post->cover);
+            }
+
+            $data["cover"] = Storage::put('post_covers', $data["cover"]);
+        }
+
         $post->update($data);
         
         if(array_key_exists('tags', $data)) {
@@ -151,9 +166,14 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-       $post->delete();
 
-       return redirect()
+        if($post->cover) {
+            Storage::delete($post->cover);
+        }
+
+        $post->delete();
+
+        return redirect()
         ->route('admin.posts.index')
         ->with('deleted', $post->title);
     }
